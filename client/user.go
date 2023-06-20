@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -100,6 +101,7 @@ func (u *userClient) GetUserTaskCategory(token string) (*[]model.UserTaskCategor
 	}
 
 	req, err := http.NewRequest("GET", config.SetUrl("/api/v1/user/tasks"), nil)
+	fmt.Printf("REQ: %+v\n", req)
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +109,7 @@ func (u *userClient) GetUserTaskCategory(token string) (*[]model.UserTaskCategor
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
+	fmt.Printf("RESP: %+v\n", resp)
 
 	if err != nil {
 		return nil, err
@@ -115,10 +118,11 @@ func (u *userClient) GetUserTaskCategory(token string) (*[]model.UserTaskCategor
 	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
+	fmt.Printf("BODY: %+v\n", string(b))
 	if err != nil {
 		return nil, err
 	}
-
+	fmt.Printf("STATUS CODE: %+v\n", resp.StatusCode)
 	if resp.StatusCode != 200 {
 		return nil, errors.New("status code not 200")
 	}
