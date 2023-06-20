@@ -1,6 +1,7 @@
 package client
 
 import (
+	"a21hc3NpZ25tZW50/config"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -18,8 +19,8 @@ func GetClientWithCookie(token string, cookies ...*http.Cookie) (*http.Client, e
 	})
 
 	jar.SetCookies(&url.URL{
-		Scheme: "http",
-		Host:   "localhost:8080",
+		Scheme: "https",
+		Host:   config.BaseURL,
 	}, cookies)
 
 	c := &http.Client{
