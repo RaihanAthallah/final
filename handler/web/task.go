@@ -89,8 +89,8 @@ func (t *taskWeb) TaskAddProcess(c *gin.Context) {
 	}
 
 	priority, _ := strconv.Atoi(c.Request.FormValue("priority"))
-	categoryID, _ := strconv.Atoi(c.Request.FormValue("category_id"))
-	userID, _ := strconv.Atoi(c.Request.FormValue("user_id"))
+	categoryID, _ := strconv.Atoi(c.Request.FormValue("category-id"))
+	userID, _ := strconv.Atoi(c.Request.FormValue("user-id"))
 	task := model.Task{
 		Title:      c.Request.FormValue("title"),
 		Deadline:   c.Request.FormValue("deadline"),
@@ -109,6 +109,6 @@ func (t *taskWeb) TaskAddProcess(c *gin.Context) {
 	if status == 201 {
 		c.Redirect(http.StatusSeeOther, "/client/login")
 	} else {
-		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message=Add Task Failed!")
+		c.Redirect(http.StatusSeeOther, "/client/dashboard")
 	}
 }
