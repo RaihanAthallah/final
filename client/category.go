@@ -30,7 +30,7 @@ func (c *categoryClient) CategoryList(token string) ([]*model.Category, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", config.SetUrl("/api/v1/Category/list"), nil)
+	req, err := http.NewRequest("GET", config.SetUrl("/api/v1/category/list"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (c *categoryClient) AddCategory(token, name string) (respCode int, err erro
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return -1, errors.New("status code not 200")
+		return -1, errors.New("failed to add category")
 	}
 
 	return resp.StatusCode, nil

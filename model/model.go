@@ -3,7 +3,7 @@ package model
 import "time"
 
 type Category struct {
-	ID   int    `gorm:"primaryKey" json:"id"`
+	ID   int    `gorm:"primaryKey;autoIncrement" json:"id"`
 	Name string `json:"name"`
 }
 

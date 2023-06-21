@@ -112,5 +112,5 @@ func (a *authWeb) RegisterProcess(c *gin.Context) {
 
 func (a *authWeb) Logout(c *gin.Context) {
 	c.SetCookie("session_token", "", -1, "/", "", false, false)
-	c.Redirect(http.StatusSeeOther, "/client/dashboard")
+	c.Redirect(http.StatusSeeOther, "/client/login")
 }
