@@ -86,18 +86,6 @@ func (c *categoryWeb) CategoryAddProcess(ctx *gin.Context) {
 		return
 	}
 
-	// priority, _ := strconv.Atoi(ctx.Request.FormValue("priority"))
-	// categoryID, _ := strconv.Atoi(ctx.Request.FormValue("category_id"))
-	// userID, _ := strconv.Atoi(ctx.Request.FormValue("user_id"))
-	// task := model.Task{
-	// 	Title:      ctx.Request.FormValue("title"),
-	// 	Deadline:   ctx.Request.FormValue("deadline"),
-	// 	Priority:   priority,
-	// 	Status:     ctx.Request.FormValue("status"),
-	// 	CategoryID: categoryID,
-	// 	UserID:     userID,
-	// }
-
 	categoryName := ctx.Request.FormValue("category_name")
 
 	status, err := c.categoryClient.AddCategory(session.Token, categoryName)
