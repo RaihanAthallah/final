@@ -188,10 +188,22 @@ func RunClient(db *gorm.DB, gin *gin.Engine, embed embed.FS) *gin.Engine {
 	{
 		main.Use(middleware.Auth())
 		main.GET("/dashboard", client.DashboardWeb.Dashboard)
-		main.GET("/task", client.TaskWeb.TaskPage)
-		user.POST("/task/add/process", client.TaskWeb.TaskAddProcess)
-		main.GET("/category", client.CategoryWeb.Category)
-		main.POST("/category/add/process", client.CategoryWeb.CategoryAddProcess)
+
+		task := main.Group("/task")
+		{
+			task.GET("/", client.TaskWeb.TaskPage)
+			task.POST("/add/process", client.TaskWeb.TaskAddProcess)
+			task.POST("/delete/process", client.TaskWeb.TaskDeleteProcess)
+			task.GET("/update", client.TaskWeb.TaskUpdatePage)
+			task.POST("/update/process/", client.TaskWeb.TaskUpdateProcess)
+		}
+
+		category := main.Group("/category")
+		{
+			category.GET("/", client.CategoryWeb.Category)
+			category.POST("/add/process", client.CategoryWeb.CategoryAddProcess)
+		}
+
 	}
 
 	modal := gin.Group("/client")

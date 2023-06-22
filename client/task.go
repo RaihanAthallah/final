@@ -16,6 +16,7 @@ type TaskClient interface {
 	AddTask(token string, task model.Task) (respCode int, err error)
 	UpdateTask(token string, task model.Task) (respCode int, err error)
 	DeleteTask(token string, id int) (respCode int, err error)
+	GetTask(token string, id int) (model.Task, error)
 }
 
 type taskClient struct {
@@ -162,8 +163,46 @@ func (t *taskClient) DeleteTask(token string, id int) (respCode int, err error) 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return -1, errors.New("status code not 200")
+		return -1, errors.New("failed to delete task")
 	}
 
 	return resp.StatusCode, nil
+}
+
+func (t *taskClient) GetTask(token string, id int) (model.Task, error) {
+	// var task model.Task
+	client, err := GetClientWithCookie(token)
+	if err != nil {
+		return model.Task{}, err
+	}
+
+	req, err := http.NewRequest("GET", config.SetUrl("/api/v1/task/get/"+strconv.Itoa(id)), nil)
+	if err != nil {
+		return model.Task{}, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		return model.Task{}, err
+	}
+
+	defer resp.Body.Close()
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return model.Task{}, err
+	}
+
+	if resp.StatusCode != 200 {
+		return model.Task{}, errors.New("status code not 200")
+	}
+
+	var task model.Task
+	err = json.Unmarshal(b, &task)
+	if err != nil {
+		return model.Task{}, err
+	}
+
+	return task, nil
 }
