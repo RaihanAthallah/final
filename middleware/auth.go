@@ -55,6 +55,8 @@ func Auth() gin.HandlerFunc {
 			return
 		}
 		ctx.Set("email", claims.Email)
+		ctx.Set("user_id", claims.ID)
+
 		ctx.Next()
 	})
 }

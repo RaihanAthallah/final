@@ -12,7 +12,7 @@ import (
 type UserService interface {
 	Register(user *model.User) (model.User, error)
 	Login(user *model.User) (token *string, err error)
-	GetUserTaskCategory() ([]model.UserTaskCategory, error)
+	GetUserTaskCategory(userID int) ([]model.UserTaskCategory, error)
 }
 
 type userService struct {
@@ -60,6 +60,7 @@ func (s *userService) Login(user *model.User) (token *string, err error) {
 
 	expirationTime := time.Now().Add(20 * time.Minute)
 	claims := &model.Claims{
+		ID:    dbUser.ID,
 		Email: dbUser.Email,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
@@ -88,8 +89,8 @@ func (s *userService) Login(user *model.User) (token *string, err error) {
 	return &tokenString, nil
 }
 
-func (s *userService) GetUserTaskCategory() ([]model.UserTaskCategory, error) {
-	taskCategory, err := s.userRepo.GetUserTaskCategory()
+func (s *userService) GetUserTaskCategory(userID int) ([]model.UserTaskCategory, error) {
+	taskCategory, err := s.userRepo.GetUserTaskCategory(userID)
 	if err != nil {
 		return nil, err
 	}
