@@ -5,6 +5,7 @@ import (
 	"a21hc3NpZ25tZW50/model"
 	"a21hc3NpZ25tZW50/service"
 	"embed"
+	"fmt"
 	"net/http"
 	"path"
 	"strconv"
@@ -22,22 +23,29 @@ type TaskWeb interface {
 }
 
 type taskWeb struct {
+	userClient     client.UserClient
+	categoryClient client.CategoryClient
 	taskClient     client.TaskClient
 	sessionService service.SessionService
 	embed          embed.FS
 }
 
-func NewTaskWeb(taskClient client.TaskClient, sessionService service.SessionService, embed embed.FS) *taskWeb {
-	return &taskWeb{taskClient, sessionService, embed}
+func NewTaskWeb(userClient client.UserClient, categoryClient client.CategoryClient, taskClient client.TaskClient, sessionService service.SessionService, embed embed.FS) *taskWeb {
+	return &taskWeb{userClient, categoryClient, taskClient, sessionService, embed}
 }
 
 func (t *taskWeb) TaskPage(c *gin.Context) {
 	var email string
+	var user_id int
 	if temp, ok := c.Get("email"); ok {
 		if contextData, ok := temp.(string); ok {
 			email = contextData
 		}
 	}
+
+	user_id = c.GetInt("user_id")
+
+	fmt.Printf("USER ID: %d\n", user_id)
 
 	session, err := t.sessionService.GetSessionByEmail(email)
 	if err != nil {
@@ -45,15 +53,23 @@ func (t *taskWeb) TaskPage(c *gin.Context) {
 		return
 	}
 
-	tasks, err := t.taskClient.TaskList(session.Token)
+	tasks, err := t.userClient.GetUserTaskCategory(session.Token)
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
+		return
+	}
+
+	categories, err := t.categoryClient.CategoryList(session.Token)
 	if err != nil {
 		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
 		return
 	}
 
 	var dataTemplate = map[string]interface{}{
-		"email": email,
-		"tasks": tasks,
+		"user_id":    user_id,
+		"email":      email,
+		"tasks":      tasks,
+		"categories": categories,
 	}
 
 	var funcMap = template.FuncMap{
@@ -165,9 +181,31 @@ func (t *taskWeb) TaskUpdatePage(c *gin.Context) {
 	}
 
 	// taskID, _ := strconv.Atoi(c.Param("task_id"))
+
 	taskID, _ := strconv.Atoi(c.Request.FormValue("task_id"))
-	// fmt.Println(taskID)
+
 	task, err := t.taskClient.GetTask(session.Token, taskID)
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
+		return
+	}
+
+	if task.UserID != c.GetInt("user_id") {
+		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message=You are not authorized to access this task")
+	}
+
+	categories, err := t.categoryClient.CategoryList(session.Token)
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
+		return
+	}
+
+	taskCategoryID := strconv.Itoa(task.CategoryID)
+	taskCategory, err := t.categoryClient.GetCategoryByID(session.Token, taskCategoryID)
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
+		return
+	}
 	// fmt.Println(task)
 	if err != nil {
 		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
@@ -175,8 +213,10 @@ func (t *taskWeb) TaskUpdatePage(c *gin.Context) {
 	}
 
 	var dataTemplate = map[string]interface{}{
-		"email": email,
-		"task":  task,
+		"email":      email,
+		"task":       task,
+		"category":   taskCategory.Name,
+		"categories": categories,
 	}
 
 	var funcMap = template.FuncMap{

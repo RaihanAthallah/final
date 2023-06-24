@@ -40,7 +40,7 @@ func (r *userRepository) CreateUser(user model.User) (model.User, error) {
 
 func (r *userRepository) GetUserTaskCategory(userID int) ([]model.UserTaskCategory, error) {
 	userTaskCategories := []model.UserTaskCategory{}
-	err := r.db.Raw("SELECT u.id AS id, u.fullname AS fullname, u.email AS email, t.title AS task, t.deadline AS deadline, t.priority AS priority, t.status AS status, c.name AS category FROM users u, tasks t, categories c WHERE  t.user_id = ? AND u.id = t.user_id AND t.category_id = c.id",userID).Scan(&userTaskCategories).Error
+	err := r.db.Raw("SELECT t.id as task_id, u.id AS id, u.fullname AS fullname, u.email AS email, t.title AS task, t.deadline AS deadline, t.priority AS priority, t.status AS status, c.name AS category FROM users u, tasks t, categories c WHERE  t.user_id = ? AND u.id = t.user_id AND t.category_id = c.id", userID).Scan(&userTaskCategories).Error
 	if err != nil {
 		return userTaskCategories, err
 	}

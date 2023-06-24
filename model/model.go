@@ -54,6 +54,7 @@ type UserTaskCategory struct {
 	ID       int    `json:"id"`
 	Fullname string `json:"fullname"`
 	Email    string `json:"email"`
+	TaskID   int    `json:"task_id"`
 	Task     string `json:"task"`
 	Deadline string `json:"deadline"`
 	Priority int    `json:"priority"`

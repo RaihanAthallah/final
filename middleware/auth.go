@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"a21hc3NpZ25tZW50/model"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +17,7 @@ func Auth() gin.HandlerFunc {
 			if err == http.ErrNoCookie {
 				if ctx.ContentType() == "application/json" {
 					ctx.JSON(http.StatusUnauthorized, model.ErrorResponse{Error: "Unauthorized"})
+					// ctx.Redirect()
 					ctx.Abort()
 					return
 				}
@@ -56,6 +58,7 @@ func Auth() gin.HandlerFunc {
 		}
 		ctx.Set("email", claims.Email)
 		ctx.Set("user_id", claims.ID)
+		fmt.Printf("USER ID AUTH: %d\n", claims.ID)
 
 		ctx.Next()
 	})
