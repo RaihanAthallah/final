@@ -6,8 +6,11 @@ import (
 	"a21hc3NpZ25tZW50/service"
 	"embed"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"text/template"
 
@@ -111,13 +114,51 @@ func (t *taskWeb) TaskAddProcess(c *gin.Context) {
 	priority, _ := strconv.Atoi(c.Request.FormValue("priority"))
 	categoryID, _ := strconv.Atoi(c.Request.FormValue("category-id"))
 	userID, _ := strconv.Atoi(c.Request.FormValue("user-id"))
+
+	idCard, handler, err := c.Request.FormFile("task-file")
+
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
+		return
+	}
+
+	uploadFolder := "uploads"
+	if err := os.MkdirAll(uploadFolder, os.ModePerm); err != nil {
+		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message=Failed to create upload folder")
+		return
+	}
+
+	// Generate a unique filename for the uploaded image (e.g., using a UUID)
+	imageFilename := handler.Filename
+
+	fmt.Printf("imageFilename: %+v\n", imageFilename)
+
+	// Create a new file in the specified folder
+	imagePath := filepath.Join(uploadFolder, imageFilename)
+	fmt.Printf("imagePath: %+v\n", imagePath)
+	imageFile, err := os.Create(imagePath)
+	// encrypt.
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
+		return
+	}
+	defer imageFile.Close()
+
+	// Copy the uploaded image to the new file
+	_, err = io.Copy(imageFile, idCard)
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
+		return
+	}
+
 	task := model.Task{
-		Title:      c.Request.FormValue("title"),
-		Deadline:   c.Request.FormValue("deadline"),
-		Priority:   priority,
-		Status:     c.Request.FormValue("status"),
-		CategoryID: categoryID,
-		UserID:     userID,
+		Title:        c.Request.FormValue("title"),
+		Deadline:     c.Request.FormValue("deadline"),
+		Priority:     priority,
+		Status:       c.Request.FormValue("status"),
+		CategoryID:   categoryID,
+		UserID:       userID,
+		DocumentPath: imagePath,
 	}
 
 	status, err := t.taskClient.AddTask(session.Token, task)

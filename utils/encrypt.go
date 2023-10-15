@@ -23,6 +23,9 @@ func EncryptAES(filePath string) string {
 	}
 
 	gcm, err := cipher.NewGCM(c)
+	if err != nil {
+		log.Printf("Error creating GCM: %v\n", err)
+	}
 
 	nonce := make([]byte, gcm.NonceSize())
 
@@ -40,31 +43,31 @@ func EncryptAES2(inputFile *os.File) ([]byte, error) {
 
 	c, err := aes.NewCipher([]byte(key))
 	if err != nil {
-		return nil, fmt.Errorf("Error creating cipher: %v", err)
+		return nil, fmt.Errorf("error creating cipher: %v", err)
 	}
 
 	gcm, err := cipher.NewGCM(c)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating GCM: %v", err)
+		return nil, fmt.Errorf("error creating GCM: %v", err)
 	}
 
 	nonce := make([]byte, gcm.NonceSize())
 
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		return nil, fmt.Errorf("Error creating nonce: %v", err)
+		return nil, fmt.Errorf("error creating nonce: %v", err)
 	}
 
 	// Read the contents of the input file
 	fileStat, err := inputFile.Stat()
 	if err != nil {
-		return nil, fmt.Errorf("Error getting file information: %v", err)
+		return nil, fmt.Errorf("error getting file information: %v", err)
 	}
 
 	fileSize := fileStat.Size()
 	fileData := make([]byte, fileSize)
 	_, err = inputFile.Read(fileData)
 	if err != nil {
-		return nil, fmt.Errorf("Error reading file: %v", err)
+		return nil, fmt.Errorf("error reading file: %v", err)
 	}
 
 	// Encrypt the file contents
@@ -79,28 +82,28 @@ func DecryptAES(encryptedFilePath string) (string, error) {
 
 	ciphertext, err := hex.DecodeString(encryptedFilePath)
 	if err != nil {
-		return "", fmt.Errorf("Error decoding hex string: %v", err)
+		return "", fmt.Errorf("error decoding hex string: %v", err)
 	}
 
 	c, err := aes.NewCipher([]byte(key))
 	if err != nil {
-		return "", fmt.Errorf("Error creating cipher: %v", err)
+		return "", fmt.Errorf("error creating cipher: %v", err)
 	}
 
 	gcm, err := cipher.NewGCM(c)
 	if err != nil {
-		return "", fmt.Errorf("Error creating GCM: %v", err)
+		return "", fmt.Errorf("error creating GCM: %v", err)
 	}
 
 	nonceSize := gcm.NonceSize()
 	if len(ciphertext) < nonceSize {
-		return "", errors.New("Ciphertext is too short")
+		return "", errors.New("ciphertext is too short")
 	}
 
 	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		return "", fmt.Errorf("Error decrypting: %v", err)
+		return "", fmt.Errorf("error decrypting: %v", err)
 	}
 
 	return string(plaintext), nil
@@ -142,12 +145,12 @@ func DecryptRC4(encryptedPassword string) (string, error) {
 func EncryptDES(input string) (string, error) {
 	key := os.Getenv("DES_KEY")
 	if len(key) != 8 {
-		return "", fmt.Errorf("DES key must be 8 bytes long")
+		return "", fmt.Errorf("dES key must be 8 bytes long")
 	}
 
 	block, err := des.NewCipher([]byte(key))
 	if err != nil {
-		return "", fmt.Errorf("Error creating DES cipher: %v", err)
+		return "", fmt.Errorf("error creating DES cipher: %v", err)
 	}
 
 	// Ensure the input is a multiple of 8 bytes (the DES block size)
@@ -167,17 +170,17 @@ func DecryptDES(encryptedData string) (string, error) {
 	key := os.Getenv("DES_KEY")
 
 	if len(key) != 8 {
-		return "", fmt.Errorf("DES key must be 8 bytes long")
+		return "", fmt.Errorf("dES key must be 8 bytes long")
 	}
 
 	block, err := des.NewCipher([]byte(key))
 	if err != nil {
-		return "", fmt.Errorf("Error creating DES cipher: %v", err)
+		return "", fmt.Errorf("error creating DES cipher: %v", err)
 	}
 
 	// Ensure the input is a multiple of 8 bytes (the DES block size)
 	if len(encryptedData)%8 != 0 {
-		return "", fmt.Errorf("Invalid encrypted data length")
+		return "", fmt.Errorf("invalid encrypted data length")
 	}
 
 	plaintext := make([]byte, len(encryptedData))

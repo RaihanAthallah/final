@@ -70,12 +70,13 @@ func (t *taskClient) AddTask(token string, task model.Task) (respCode int, err e
 	}
 
 	datajson := map[string]interface{}{
-		"title":       task.Title,
-		"deadline":    task.Deadline,
-		"priority":    task.Priority,
-		"status":      task.Status,
-		"category_id": task.CategoryID,
-		"user_id":     task.UserID,
+		"title":         task.Title,
+		"deadline":      task.Deadline,
+		"priority":      task.Priority,
+		"status":        task.Status,
+		"category_id":   task.CategoryID,
+		"user_id":       task.UserID,
+		"document_path": task.DocumentPath,
 	}
 
 	data, err := json.Marshal(datajson)

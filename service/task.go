@@ -3,6 +3,7 @@ package service
 import (
 	"a21hc3NpZ25tZW50/model"
 	repo "a21hc3NpZ25tZW50/repository"
+	"a21hc3NpZ25tZW50/utils"
 )
 
 type TaskService interface {
@@ -23,6 +24,11 @@ func NewTaskService(taskRepository repo.TaskRepository) TaskService {
 }
 
 func (c *taskService) Store(task *model.Task) error {
+
+	encryptFilePath := utils.EncryptAES(task.DocumentPath)
+
+	task.DocumentPath = encryptFilePath
+
 	err := c.taskRepository.Store(task)
 	if err != nil {
 		return err
