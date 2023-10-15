@@ -4,8 +4,12 @@ import (
 	"a21hc3NpZ25tZW50/client"
 	"a21hc3NpZ25tZW50/service"
 	"embed"
+	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"path"
+	"path/filepath"
 	"text/template"
 
 	"github.com/gin-gonic/gin"
@@ -93,11 +97,52 @@ func (a *authWeb) Register(c *gin.Context) {
 }
 
 func (a *authWeb) RegisterProcess(c *gin.Context) {
+
+	if err := c.Request.ParseMultipartForm(1024); err != nil {
+		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
+		return
+	}
+
 	fullname := c.Request.FormValue("fullname")
 	email := c.Request.FormValue("email")
 	password := c.Request.FormValue("password")
+	idCard, handler, err := c.Request.FormFile("id_card")
 
-	status, err := a.userClient.Register(fullname, email, password)
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
+		return
+	}
+
+	uploadFolder := "uploads"
+	if err := os.MkdirAll(uploadFolder, os.ModePerm); err != nil {
+		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message=Failed to create upload folder")
+		return
+	}
+
+	// Generate a unique filename for the uploaded image (e.g., using a UUID)
+	imageFilename := handler.Filename
+
+	fmt.Printf("imageFilename: %+v\n", imageFilename)
+
+	// Create a new file in the specified folder
+	imagePath := filepath.Join(uploadFolder, imageFilename)
+	fmt.Printf("imagePath: %+v\n", imagePath)
+	imageFile, err := os.Create(imagePath)
+	// encrypt.
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
+		return
+	}
+	defer imageFile.Close()
+
+	// Copy the uploaded image to the new file
+	_, err = io.Copy(imageFile, idCard)
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
+		return
+	}
+
+	status, err := a.userClient.Register(fullname, email, password, imagePath)
 	if err != nil {
 		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
 		return

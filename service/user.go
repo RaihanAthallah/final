@@ -3,7 +3,9 @@ package service
 import (
 	"a21hc3NpZ25tZW50/model"
 	repo "a21hc3NpZ25tZW50/repository"
+	"a21hc3NpZ25tZW50/utils"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -13,6 +15,7 @@ type UserService interface {
 	Register(user *model.User) (model.User, error)
 	Login(user *model.User) (token *string, err error)
 	GetUserTaskCategory() ([]model.UserTaskCategory, error)
+	// GetUserProfile() ([]model.UserProfile, error)
 }
 
 type userService struct {
@@ -28,6 +31,13 @@ func (s *userService) Register(user *model.User) (model.User, error) {
 	dbUser, err := s.userRepo.GetUserByEmail(user.Email)
 	if err != nil {
 		return *user, err
+	}
+
+	// user.Password = utils.EncryptAES(user.Password)
+	user.IDCard = utils.EncryptAES(user.IDCard)
+	user.Password, err = utils.EncryptRC4(user.Password)
+	if err != nil {
+		return *user, errors.New("error encrypting password")
 	}
 
 	if dbUser.Email != "" || dbUser.ID != 0 {
@@ -54,7 +64,15 @@ func (s *userService) Login(user *model.User) (token *string, err error) {
 		return nil, errors.New("user not found")
 	}
 
-	if user.Password != dbUser.Password {
+	fmt.Printf("dbUser password: %+v\n", dbUser.Password)
+
+	// decryptedPassword, err := utils.DecryptAES(dbUser.Password)
+	decryptedPassword, err := utils.DecryptRC4(dbUser.Password)
+
+	fmt.Printf("decrypt dbUser password: %+v\n", decryptedPassword)
+	fmt.Printf("user password: %+v\n", user.Password)
+
+	if user.Password != decryptedPassword {
 		return nil, errors.New("wrong email or password")
 	}
 
@@ -95,3 +113,21 @@ func (s *userService) GetUserTaskCategory() ([]model.UserTaskCategory, error) {
 	}
 	return taskCategory, nil
 }
+
+// func (s *userService) GetUserProfile() ([]model.UserProfile, error) {
+// 	userData, err := s.userRepo.GetUserByEmail()
+
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	userProfile := []model.UserProfile{
+// 		{
+// 			ID:       userData.ID,
+// 			Fullname: userData.Fullname,
+// 			Email:    userData.Email,
+// 			IDCard:   userData.IDCard,
+// 		},
+// 	}
+// 	return userProfile, nil
+// }
