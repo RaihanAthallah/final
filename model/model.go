@@ -12,6 +12,7 @@ type User struct {
 	Fullname  string    `json:"fullname" gorm:"type:varchar(255);"`
 	Email     string    `json:"email" gorm:"type:varchar(255);not null"`
 	Password  string    `json:"-" gorm:"type:varchar(255);not null"`
+	IDCard    string    `json:"id_card" gorm:"type:varchar(255);"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -25,17 +26,25 @@ type UserRegister struct {
 	Fullname string `json:"fullname" binding:"required"`
 	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
+	IDCard   string `json:"id_card" binding:"required"`
 }
 
 type Task struct {
-	ID         int    `gorm:"primaryKey" json:"id"`
-	Title      string `json:"title"`
-	Deadline   string `json:"deadline"`
-	Priority   int    `json:"priority"`
-	Status     string `json:"status"`
-	CategoryID int    `json:"category_id"`
-	UserID     int    `json:"user_id"`
+	ID           int    `gorm:"primaryKey" json:"id"`
+	Title        string `json:"title"`
+	Deadline     string `json:"deadline"`
+	Priority     int    `json:"priority"`
+	Status       string `json:"status"`
+	CategoryID   int    `json:"category_id"`
+	UserID       int    `json:"user_id"`
+	DocumentPath string `json:"document_path"`
 }
+
+// type Document struct {
+// 	ID       int    `gorm:"primaryKey" json:"id"`
+// 	UserID   int    `json:"user_id"`
+// 	FilePath string `json:"file_path"`
+// }
 
 type Session struct {
 	ID     int       `gorm:"primaryKey" json:"id"`
@@ -69,4 +78,11 @@ type Credential struct {
 	DatabaseName string
 	Port         int
 	Schema       string
+}
+
+type UserProfile struct {
+	ID       int    `json:"id"`
+	Fullname string `json:"fullname"`
+	Email    string `json:"email"`
+	IDCard   string `json:"id_card"`
 }

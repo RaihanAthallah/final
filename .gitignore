@@ -1,3 +1,4 @@
-client\cookie.go
-.env
 
+client/cookie.go
+uploads
+assets

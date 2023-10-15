@@ -39,6 +39,7 @@ func (u *userAPI) Register(c *gin.Context) {
 		Fullname: user.Fullname,
 		Email:    user.Email,
 		Password: user.Password,
+		IDCard:   user.IDCard,
 	}
 
 	recordUser, err := u.userService.Register(&recordUser)
@@ -90,3 +91,13 @@ func (u *userAPI) GetUserTaskCategory(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, taskCategory)
 }
+
+// func (u *userAPI) GetUserProfile(c *gin.Context) {
+// 	var userProfile model.UserProfile
+// 	userProfile, err := u.userService.GetUserProfile()
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, model.NewErrorResponse("invalid user id"))
+// 		return
+// 	}
+// 	c.JSON(http.StatusOK, userProfile)
+// }
