@@ -3,6 +3,7 @@ package utils
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/des"
 	"crypto/rand"
 	"crypto/rc4"
 	"encoding/hex"
@@ -134,6 +135,61 @@ func DecryptRC4(encryptedPassword string) (string, error) {
 	// Decrypt the ciphertext by XORing it with the RC4 cipher
 	plaintext := make([]byte, len(ciphertext))
 	cipher.XORKeyStream(plaintext, ciphertext)
+
+	return string(plaintext), nil
+}
+
+func EncryptDES(input string) (string, error) {
+	key := os.Getenv("DES_KEY")
+	if len(key) != 8 {
+		return "", fmt.Errorf("DES key must be 8 bytes long")
+	}
+
+	block, err := des.NewCipher([]byte(key))
+	if err != nil {
+		return "", fmt.Errorf("Error creating DES cipher: %v", err)
+	}
+
+	// Ensure the input is a multiple of 8 bytes (the DES block size)
+	padSize := 8 - (len(input) % 8)
+	if padSize > 0 {
+		padding := make([]byte, padSize)
+		input += string(padding)
+	}
+
+	ciphertext := make([]byte, len(input))
+	block.Encrypt(ciphertext, []byte(input))
+
+	return string(ciphertext), nil
+}
+
+func DecryptDES(encryptedData string) (string, error) {
+	key := os.Getenv("DES_KEY")
+
+	if len(key) != 8 {
+		return "", fmt.Errorf("DES key must be 8 bytes long")
+	}
+
+	block, err := des.NewCipher([]byte(key))
+	if err != nil {
+		return "", fmt.Errorf("Error creating DES cipher: %v", err)
+	}
+
+	// Ensure the input is a multiple of 8 bytes (the DES block size)
+	if len(encryptedData)%8 != 0 {
+		return "", fmt.Errorf("Invalid encrypted data length")
+	}
+
+	plaintext := make([]byte, len(encryptedData))
+	block.Decrypt(plaintext, []byte(encryptedData))
+
+	// Trim any trailing null bytes (padding)
+	for i := len(plaintext) - 1; i >= 0; i-- {
+		if plaintext[i] != 0 {
+			plaintext = plaintext[:i+1]
+			break
+		}
+	}
 
 	return string(plaintext), nil
 }
