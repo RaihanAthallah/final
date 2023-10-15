@@ -15,6 +15,7 @@ type CategoryClient interface {
 	AddCategory(token, name string) (respCode int, err error)
 	UpdateCategory(token, id, name string) (respCode int, err error)
 	DeleteCategory(token, id string) (respCode int, err error)
+	GetCategoryByID(token, id string) (*model.Category, error)
 }
 
 type categoryClient struct {
@@ -53,6 +54,42 @@ func (c *categoryClient) CategoryList(token string) ([]*model.Category, error) {
 	}
 
 	var Categorys []*model.Category
+	err = json.Unmarshal(b, &Categorys)
+	if err != nil {
+		return nil, err
+	}
+
+	return Categorys, nil
+}
+func (c *categoryClient) GetCategoryByID(token string, id string) (*model.Category, error) {
+	client, err := GetClientWithCookie(token)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", config.SetUrl("/api/v1/category/get/"+id), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != 200 {
+		return nil, errors.New("status code not 200")
+	}
+
+	var Categorys *model.Category
 	err = json.Unmarshal(b, &Categorys)
 	if err != nil {
 		return nil, err

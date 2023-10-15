@@ -80,8 +80,11 @@ func (u *userAPI) Login(c *gin.Context) {
 }
 
 func (u *userAPI) GetUserTaskCategory(c *gin.Context) {
+	// userID,_ := c.Get("user_id").(int)
+	userID := c.GetInt("user_id")
 	var taskCategory []model.UserTaskCategory
-	taskCategory, err := u.userService.GetUserTaskCategory()
+	
+	taskCategory, err := u.userService.GetUserTaskCategory(userID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, model.NewErrorResponse("invalid user id"))
 		return

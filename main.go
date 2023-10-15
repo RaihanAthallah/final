@@ -163,7 +163,7 @@ func RunClient(db *gorm.DB, gin *gin.Engine, embed embed.FS) *gin.Engine {
 	modalWeb := web.NewModalWeb(embed)
 	homeWeb := web.NewHomeWeb(embed)
 	dashboardWeb := web.NewDashboardWeb(userClient, sessionService, embed)
-	taskWeb := web.NewTaskWeb(taskClient, sessionService, embed)
+	taskWeb := web.NewTaskWeb(userClient, categoryClient, taskClient, sessionService, embed)
 	categoryWeb := web.NewCategoryWeb(categoryClient, sessionService, embed)
 
 	client := ClientHandler{
