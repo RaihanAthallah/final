@@ -16,7 +16,7 @@ type UserClient interface {
 	Register(nik, fullname, address, email, password, imagePath string) (respCode int, err error)
 
 	GetUserTaskCategory(token string) (*[]model.UserTaskCategory, error)
-	// GetUserProfile(email string) (*model.User, error)
+	GetUserProfile(token string) (*model.UserProfile, error)
 }
 
 type userClient struct {
@@ -47,7 +47,7 @@ func (u *userClient) Login(email, password string) (respCode int, err error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 
-	fmt.Printf("RESP: %+v\n", resp)
+	// fmt.Printf("RESP: %+v\n", resp)
 
 	if err != nil {
 		return -1, err
@@ -72,7 +72,7 @@ func (u *userClient) Register(nik, fullname, address, email, password, imagePath
 		"id_card":  imagePath,
 	}
 
-	fmt.Printf("datajson: %+v\n", datajson)
+	// fmt.Printf("datajson: %+v\n", datajson)
 	data, err := json.Marshal(datajson)
 	if err != nil {
 		return -1, err
@@ -129,7 +129,7 @@ func (u *userClient) GetUserTaskCategory(token string) (*[]model.UserTaskCategor
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("STATUS CODE: %+v\n", resp.StatusCode)
+	// fmt.Printf("STATUS CODE: %+v\n", resp.StatusCode)
 	if resp.StatusCode != 200 {
 		return nil, errors.New("status code not 200")
 	}
@@ -143,44 +143,46 @@ func (u *userClient) GetUserTaskCategory(token string) (*[]model.UserTaskCategor
 	return &userTasks, nil
 }
 
-// func (u *userClient) GetUserProfile(email string) (*model.User, error) {
-// 	client, err := GetClientWithCookie(token)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+func (u *userClient) GetUserProfile(token string) (*model.UserProfile, error) {
+	client, err := GetClientWithCookie(token)
+	if err != nil {
+		return nil, err
+	}
 
-// 	req, err := http.NewRequest("GET", config.SetUrl("/api/v1/user/profile"), nil)
-// 	fmt.Printf("REQ: %+v\n", req)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	req, err := http.NewRequest("GET", config.SetUrl("/api/v1/user/profile"), nil)
+	// fmt.Printf("REQ: %+v\n", req)
+	if err != nil {
+		return nil, err
+	}
 
-// 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", "application/json")
 
-// 	resp, err := client.Do(req)
-// 	fmt.Printf("RESP: %+v\n", resp)
+	resp, err := client.Do(req)
+	// fmt.Printf("RESP: %+v\n", resp.Body)
 
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	if err != nil {
+		return nil, err
+	}
 
-// 	defer resp.Body.Close()
+	defer resp.Body.Close()
 
-// 	b, err := ioutil.ReadAll(resp.Body)
-// 	fmt.Printf("BODY: %+v\n", string(b))
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	fmt.Printf("STATUS CODE: %+v\n", resp.StatusCode)
-// 	if resp.StatusCode != 200 {
-// 		return nil, errors.New("status code not 200")
-// 	}
+	b, err := ioutil.ReadAll(resp.Body)
+	fmt.Printf("BODY: %+v\n", string(b))
+	if err != nil {
+		return nil, err
+	}
+	// fmt.Printf("STATUS CODE: %+v\n", resp.StatusCode)
+	if resp.StatusCode != 200 {
+		return nil, errors.New("status code not 200")
+	}
 
-// 	var user model.User
-// 	err = json.Unmarshal(b, &user)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	var user model.UserProfile
+	// fmt.Printf("USER: %+v\n", b)
+	err = json.Unmarshal(b, &user)
+	fmt.Printf("ERROR UNMARSHALL: %+v\n", err)
+	if err != nil {
+		return nil, err
+	}
 
-// 	return &user, nil
-// }
+	return &user, nil
+}

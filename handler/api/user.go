@@ -13,6 +13,7 @@ type UserAPI interface {
 	Register(c *gin.Context)
 	Login(c *gin.Context)
 	GetUserTaskCategory(c *gin.Context)
+	GetUserProfile(c *gin.Context)
 }
 
 type userAPI struct {

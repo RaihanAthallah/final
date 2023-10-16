@@ -122,7 +122,6 @@ func (a *authWeb) RegisterProcess(c *gin.Context) {
 		return
 	}
 
-	// Generate a unique filename for the uploaded image (e.g., using a UUID)
 	imageFilename := handler.Filename
 
 	fmt.Printf("imageFilename: %+v\n", imageFilename)
@@ -145,7 +144,7 @@ func (a *authWeb) RegisterProcess(c *gin.Context) {
 		return
 	}
 
-	status, err := a.userClient.Register(nik, fullname, address, email, password, imagePath)
+	status, err := a.userClient.Register(nik, fullname, address, email, password, imageFilename)
 	if err != nil {
 		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
 		return

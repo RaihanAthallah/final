@@ -123,7 +123,7 @@ func RunServer(db *gorm.DB, gin *gin.Engine) *gin.Engine {
 
 			user.Use(middleware.Auth())
 			user.GET("/tasks", apiHandler.UserAPIHandler.GetUserTaskCategory)
-			// user.GET("/profile", apiHandler.UserAPIHandler.GetUserProfile)
+			user.GET("/profile", apiHandler.UserAPIHandler.GetUserProfile)
 		}
 
 		task := version.Group("/task")
@@ -189,6 +189,7 @@ func RunClient(db *gorm.DB, gin *gin.Engine, embed embed.FS) *gin.Engine {
 	{
 		main.Use(middleware.Auth())
 		main.GET("/dashboard", client.DashboardWeb.Dashboard)
+		main.GET("/profile", client.DashboardWeb.Profile)
 
 		task := main.Group("/task")
 		{
@@ -197,7 +198,6 @@ func RunClient(db *gorm.DB, gin *gin.Engine, embed embed.FS) *gin.Engine {
 			task.POST("/delete/process", client.TaskWeb.TaskDeleteProcess)
 			task.GET("/update", client.TaskWeb.TaskUpdatePage)
 			task.POST("/update/process/", client.TaskWeb.TaskUpdateProcess)
-			// task.POST("/add/file/", client.TaskWeb.TaskAddFileProcess)
 		}
 
 		category := main.Group("/category")
