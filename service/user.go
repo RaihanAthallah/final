@@ -15,6 +15,7 @@ type UserService interface {
 	Register(user *model.User) (model.User, error)
 	Login(user *model.User) (token *string, err error)
 	GetUserTaskCategory(userID int) ([]model.UserTaskCategory, error)
+	GetUserProfile(userID int) ([]model.UserProfile, error)
 }
 
 type userService struct {
@@ -34,6 +35,14 @@ func (s *userService) Register(user *model.User) (model.User, error) {
 
 	// user.Password = utils.EncryptAES(user.Password)
 	user.IDCard = utils.EncryptAES(user.IDCard)
+	user.Address, err = utils.EncryptRC4(user.Address)
+	fmt.Printf("user address: %+v\n", user.Address)
+	if err != nil {
+		return *user, errors.New("error encrypting address")
+	}
+	// user.NIK, err = utils.EncryptDES(user.NIK)
+	user.NIK = utils.EncryptAES(user.NIK)
+	fmt.Printf("user nik: %+v\n", user.NIK)
 	user.Password, err = utils.EncryptRC4(user.Password)
 	if err != nil {
 		return *user, errors.New("error encrypting password")
@@ -114,20 +123,22 @@ func (s *userService) GetUserTaskCategory(userID int) ([]model.UserTaskCategory,
 	return taskCategory, nil
 }
 
-// func (s *userService) GetUserProfile() ([]model.UserProfile, error) {
-// 	userData, err := s.userRepo.GetUserByEmail()
+func (s *userService) GetUserProfile(userID int) ([]model.UserProfile, error) {
+	userData, err := s.userRepo.GetUserProfile(userID)
 
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	if err != nil {
+		return nil, err
+	}
 
-// 	userProfile := []model.UserProfile{
-// 		{
-// 			ID:       userData.ID,
-// 			Fullname: userData.Fullname,
-// 			Email:    userData.Email,
-// 			IDCard:   userData.IDCard,
-// 		},
-// 	}
-// 	return userProfile, nil
-// }
+	userProfile := []model.UserProfile{
+		{
+			ID:       userData.ID,
+			NIK:      userData.NIK,
+			Fullname: userData.Fullname,
+			Address:  userData.Address,
+			Email:    userData.Email,
+			IDCard:   userData.IDCard,
+		},
+	}
+	return userProfile, nil
+}

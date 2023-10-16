@@ -13,10 +13,10 @@ import (
 
 type UserClient interface {
 	Login(email, password string) (respCode int, err error)
-	Register(fullname, email, password, idCardPath string) (respCode int, err error)
+	Register(nik, fullname, address, email, password, imagePath string) (respCode int, err error)
 
 	GetUserTaskCategory(token string) (*[]model.UserTaskCategory, error)
-	// GetUserProfile(email string) (*model.User, error) 
+	// GetUserProfile(email string) (*model.User, error)
 }
 
 type userClient struct {
@@ -62,14 +62,17 @@ func (u *userClient) Login(email, password string) (respCode int, err error) {
 	}
 }
 
-func (u *userClient) Register(fullname, email, password, idCardPath string) (respCode int, err error) {
+func (u *userClient) Register(nik, fullname, address, email, password, imagePath string) (respCode int, err error) {
 	datajson := map[string]string{
+		"nik":      nik,
 		"fullname": fullname,
+		"address":  address,
 		"email":    email,
 		"password": password,
-		"id_card":  idCardPath,
+		"id_card":  imagePath,
 	}
 
+	fmt.Printf("datajson: %+v\n", datajson)
 	data, err := json.Marshal(datajson)
 	if err != nil {
 		return -1, err

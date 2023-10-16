@@ -9,7 +9,9 @@ type Category struct {
 
 type User struct {
 	ID        int       `gorm:"primaryKey" json:"id"`
+	NIK       string    `json:"nik" gorm:"type:varchar(255);not null;unique"`
 	Fullname  string    `json:"fullname" gorm:"type:varchar(255);"`
+	Address   string    `json:"address" gorm:"type:varchar(255);"`
 	Email     string    `json:"email" gorm:"type:varchar(255);not null"`
 	Password  string    `json:"-" gorm:"type:varchar(255);not null"`
 	IDCard    string    `json:"id_card" gorm:"type:varchar(255);"`
@@ -23,7 +25,9 @@ type UserLogin struct {
 }
 
 type UserRegister struct {
+	NIK      string `json:"nik" binding:"required"`
 	Fullname string `json:"fullname" binding:"required"`
+	Address  string `json:"address" binding:"required"`
 	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 	IDCard   string `json:"id_card" binding:"required"`
@@ -82,7 +86,9 @@ type Credential struct {
 
 type UserProfile struct {
 	ID       int    `json:"id"`
+	NIK      string `json:"nik"`
 	Fullname string `json:"fullname"`
+	Address  string `json:"address"`
 	Email    string `json:"email"`
 	IDCard   string `json:"id_card"`
 }

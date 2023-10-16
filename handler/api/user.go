@@ -3,6 +3,7 @@ package api
 import (
 	"a21hc3NpZ25tZW50/model"
 	"a21hc3NpZ25tZW50/service"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -25,7 +26,10 @@ func NewUserAPI(userService service.UserService) *userAPI {
 func (u *userAPI) Register(c *gin.Context) {
 	var user model.UserRegister
 
+	fmt.Println("masuk register")
+
 	if err := c.BindJSON(&user); err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, model.NewErrorResponse("invalid decode json"))
 		return
 	}
@@ -36,11 +40,15 @@ func (u *userAPI) Register(c *gin.Context) {
 	}
 
 	var recordUser = model.User{
+		NIK:      user.NIK,
 		Fullname: user.Fullname,
+		Address:  user.Address,
 		Email:    user.Email,
 		Password: user.Password,
 		IDCard:   user.IDCard,
 	}
+
+	fmt.Println(recordUser)
 
 	recordUser, err := u.userService.Register(&recordUser)
 	if err != nil {
@@ -83,7 +91,7 @@ func (u *userAPI) GetUserTaskCategory(c *gin.Context) {
 	// userID,_ := c.Get("user_id").(int)
 	userID := c.GetInt("user_id")
 	var taskCategory []model.UserTaskCategory
-	
+
 	taskCategory, err := u.userService.GetUserTaskCategory(userID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, model.NewErrorResponse("invalid user id"))
@@ -92,12 +100,12 @@ func (u *userAPI) GetUserTaskCategory(c *gin.Context) {
 	c.JSON(http.StatusOK, taskCategory)
 }
 
-// func (u *userAPI) GetUserProfile(c *gin.Context) {
-// 	var userProfile model.UserProfile
-// 	userProfile, err := u.userService.GetUserProfile()
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, model.NewErrorResponse("invalid user id"))
-// 		return
-// 	}
-// 	c.JSON(http.StatusOK, userProfile)
-// }
+func (u *userAPI) GetUserProfile(c *gin.Context) {
+	userID := c.GetInt("user_id")
+	userProfile, err := u.userService.GetUserProfile(userID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, model.NewErrorResponse("invalid user id"))
+		return
+	}
+	c.JSON(http.StatusOK, userProfile)
+}

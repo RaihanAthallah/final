@@ -10,6 +10,7 @@ type UserRepository interface {
 	GetUserByEmail(email string) (model.User, error)
 	CreateUser(user model.User) (model.User, error)
 	GetUserTaskCategory(UserID int) ([]model.UserTaskCategory, error)
+	GetUserProfile(userID int) (model.UserProfile, error)
 }
 
 type userRepository struct {
@@ -45,4 +46,13 @@ func (r *userRepository) GetUserTaskCategory(userID int) ([]model.UserTaskCatego
 		return userTaskCategories, err
 	}
 	return userTaskCategories, nil
+}
+
+func (r *userRepository) GetUserProfile(userID int) (model.UserProfile, error) {
+	userProfile := model.UserProfile{}
+	err := r.db.Raw("SELECT u.id AS id, u.nik as nik, u.fullname AS fullname, u.email AS email, u.address AS address, u.id_card AS id_card FROM users u WHERE u.id = ?", userID).Scan(&userProfile).Error
+	if err != nil {
+		return userProfile, err
+	}
+	return userProfile, nil
 }

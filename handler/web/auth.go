@@ -97,13 +97,16 @@ func (a *authWeb) Register(c *gin.Context) {
 }
 
 func (a *authWeb) RegisterProcess(c *gin.Context) {
-
+	address := c.Request.FormValue("address")
+	fmt.Printf("address: %+v\n", address)
 	if err := c.Request.ParseMultipartForm(1024); err != nil {
 		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
 		return
 	}
 
+	nik := c.Request.FormValue("nik")
 	fullname := c.Request.FormValue("fullname")
+
 	email := c.Request.FormValue("email")
 	password := c.Request.FormValue("password")
 	idCard, handler, err := c.Request.FormFile("id_card")
@@ -142,7 +145,7 @@ func (a *authWeb) RegisterProcess(c *gin.Context) {
 		return
 	}
 
-	status, err := a.userClient.Register(fullname, email, password, imagePath)
+	status, err := a.userClient.Register(nik, fullname, address, email, password, imagePath)
 	if err != nil {
 		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
 		return
