@@ -285,10 +285,17 @@
                       </div>
                       {{else}}
                       <div class="flex-none rounded-full bg-gray-500/20 p-1">
-                        <div class="h-1.5 w-1.5 rounded-full bg-gray-500"></div>
+                        <div class="h-1.5 w-1.5 rounded-full bg-gray-500">
+                          <p class="text-sm leading-6 text-gray-900"></p><strong>{{$val.DocumentPath}}</strong></p>
+                        </div>
                       </div>
                       {{end}}{{end}}
                       <p class="text-xs leading-5 text-gray-500">{{$val.Status}}</p>
+                      <div class="flex-none rounded-full bg-gray-500/20 p-1">
+                        <div class="h-1.5 w-1.5 rounded-full bg-gray-500">
+                          <p class="text-sm leading-6 text-gray-900"></p><strong>{{$val.DocumentPath}}</strong></p>
+                        </div>
+                      </div>
                       
                   </div>
                   <div class="sm:flex sm:flex-row my-2">

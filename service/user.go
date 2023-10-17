@@ -36,18 +36,18 @@ func (s *userService) Register(user *model.User) (model.User, error) {
 	// user.Password = utils.EncryptAES(user.Password)
 	// user.IDCard = utils.EncryptAES(user.IDCard)
 	user.IDCard, err = utils.EncryptRC4(user.IDCard)
+	if err != nil {
+		return *user, errors.New("error encrypting id card")
+	}
 	user.Address, err = utils.EncryptRC4(user.Address)
-	fmt.Printf("user address: %+v\n", user.Address)
+	// fmt.Printf("user address: %+v\n", user.Address)
 	if err != nil {
 		return *user, errors.New("error encrypting address")
 	}
 	// user.NIK, err = utils.EncryptDES(user.NIK)
 	user.NIK = utils.EncryptAES(user.NIK)
-	fmt.Printf("user nik: %+v\n", user.NIK)
-	user.Password, err = utils.EncryptRC4(user.Password)
-	if err != nil {
-		return *user, errors.New("error encrypting password")
-	}
+	// fmt.Printf("user nik: %+v\n", user.NIK)
+	user.Password = utils.EncryptAES(user.Password)
 
 	if dbUser.Email != "" || dbUser.ID != 0 {
 		return *user, errors.New("email already exists")
@@ -75,8 +75,8 @@ func (s *userService) Login(user *model.User) (token *string, err error) {
 
 	fmt.Printf("dbUser password: %+v\n", dbUser.Password)
 
-	// decryptedPassword, err := utils.DecryptAES(dbUser.Password)
-	decryptedPassword, err := utils.DecryptRC4(dbUser.Password)
+	decryptedPassword, err := utils.DecryptAES(dbUser.Password)
+	// decryptedPassword, err := utils.DecryptRC4(dbUser.Password)
 
 	fmt.Printf("decrypt dbUser password: %+v\n", decryptedPassword)
 	fmt.Printf("user password: %+v\n", user.Password)
@@ -118,6 +118,15 @@ func (s *userService) Login(user *model.User) (token *string, err error) {
 
 func (s *userService) GetUserTaskCategory(userID int) ([]model.UserTaskCategory, error) {
 	taskCategory, err := s.userRepo.GetUserTaskCategory(userID)
+	for i := 0; i < len(taskCategory); i++ {
+		// decryptFilePath, err := utils.DecryptAES(taskCategory[i].DocumentPath)
+		decryptFilePath, err := utils.DecryptAES(taskCategory[i].DocumentPath)
+		if err != nil {
+			return nil, err
+		}
+		taskCategory[i].DocumentPath = decryptFilePath
+	}
+
 	if err != nil {
 		return nil, err
 	}

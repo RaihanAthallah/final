@@ -97,8 +97,8 @@ func (a *authWeb) Register(c *gin.Context) {
 }
 
 func (a *authWeb) RegisterProcess(c *gin.Context) {
-	address := c.Request.FormValue("address")
-	fmt.Printf("address: %+v\n", address)
+
+	// fmt.Printf("address: %+v\n", address)
 	if err := c.Request.ParseMultipartForm(1024); err != nil {
 		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
 		return
@@ -106,13 +106,28 @@ func (a *authWeb) RegisterProcess(c *gin.Context) {
 
 	nik := c.Request.FormValue("nik")
 	fullname := c.Request.FormValue("fullname")
-
+	address := c.Request.FormValue("address")
 	email := c.Request.FormValue("email")
 	password := c.Request.FormValue("password")
 	idCard, handler, err := c.Request.FormFile("id_card")
 
 	if err != nil {
 		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
+		return
+	}
+
+	allowedExtensions := []string{".jpg", ".jpeg", ".png"}
+	ext := filepath.Ext(handler.Filename)
+	validExtension := false
+	for _, allowedExt := range allowedExtensions {
+		if ext == allowedExt {
+			validExtension = true
+			break
+		}
+	}
+
+	if !validExtension {
+		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message=Invalid file extension")
 		return
 	}
 

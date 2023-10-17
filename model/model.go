@@ -64,15 +64,16 @@ type TaskCategory struct {
 }
 
 type UserTaskCategory struct {
-	ID       int    `json:"id"`
-	Fullname string `json:"fullname"`
-	Email    string `json:"email"`
-	TaskID   int    `json:"task_id"`
-	Task     string `json:"task"`
-	Deadline string `json:"deadline"`
-	Priority int    `json:"priority"`
-	Status   string `json:"status"`
-	Category string `json:"category"`
+	ID           int    `json:"id"`
+	Fullname     string `json:"fullname"`
+	Email        string `json:"email"`
+	TaskID       int    `json:"task_id"`
+	Task         string `json:"task"`
+	Deadline     string `json:"deadline"`
+	Priority     int    `json:"priority"`
+	Status       string `json:"status"`
+	Category     string `json:"category"`
+	DocumentPath string `json:"document_path"`
 }
 
 type Credential struct {

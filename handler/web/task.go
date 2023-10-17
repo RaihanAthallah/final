@@ -158,7 +158,7 @@ func (t *taskWeb) TaskAddProcess(c *gin.Context) {
 		Status:       c.Request.FormValue("status"),
 		CategoryID:   categoryID,
 		UserID:       userID,
-		DocumentPath: imagePath,
+		DocumentPath: imageFilename,
 	}
 
 	status, err := t.taskClient.AddTask(session.Token, task)
