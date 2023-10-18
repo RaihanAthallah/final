@@ -1,5 +1,4 @@
 .env
 client/cookie.go
-uploads/*
-!uploads/.gitkeep
-assets
+client/uploads/*
+!client/uploads/.gitkeep

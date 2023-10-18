@@ -191,6 +191,9 @@ func RunClient(db *gorm.DB, gin *gin.Engine, embed embed.FS) *gin.Engine {
 		main.GET("/dashboard", client.DashboardWeb.Dashboard)
 		main.GET("/profile", client.DashboardWeb.Profile)
 
+		// fs := http.FileServer(http.Dir("client/uploads/*idCard"))
+		// main.Handle("/uploads/*idCard", http.StripPrefix("/uploads/", fs))
+
 		task := main.Group("/task")
 		{
 			task.GET("/", client.TaskWeb.TaskPage)

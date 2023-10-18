@@ -4,7 +4,6 @@ import (
 	"a21hc3NpZ25tZW50/client"
 	"a21hc3NpZ25tZW50/service"
 	"embed"
-	"fmt"
 	"net/http"
 	"path"
 	"text/template"
@@ -93,14 +92,15 @@ func (d *dashboardWeb) Profile(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("USER PROFILE: %+v\n", userProfile)
-
+	// fmt.Printf("USER PROFILE: %+v\n", userProfile)
+	// var imgTag string = "<img src='./uploads/" + userProfile.IDCard + "'" + "alt='" + userProfile.IDCard + "'" + "/>"
 	var dataTemplate = map[string]interface{}{
 		"email":    email,
 		"nik":      userProfile.NIK,
 		"fullname": userProfile.Fullname,
 		"address":  userProfile.Address,
 		"idCard":   userProfile.IDCard,
+		// "imgTag":   imgTag,
 	}
 
 	var funcMap = template.FuncMap{
@@ -122,4 +122,9 @@ func (d *dashboardWeb) Profile(c *gin.Context) {
 	if err != nil {
 		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
 	}
+	// c.File("views/main/" + userProfile.IDCard)
+	// if err != nil {
+	// 	c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
+	// }
+
 }
