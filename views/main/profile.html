@@ -76,10 +76,8 @@
             <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">{{$.nik}}</h1>
             <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">{{$.address}}</h1>
             <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">{{$.email}}</h1>
-            <img class="" src="./../..uploads/{{$.idCard}}" alt="{{$.idCard}}" width="1000" height="500" />
-            <!-- <a href=../../uploads/f97d6a8e3f4bbd23992b3a3c0e68e5bf.jpg" download>
-              <img src="../../uploads/f97d6a8e3f4bbd23992b3a3c0e68e5bf.jpg" alt="W3Schools" />
-            </a> -->
+            <img class="" src="./uploads/{{$.idCard}}" alt="{{$.idCard}}" width="1000" height="500" />
+            {{.imgTag}}
             <p class="mt-6 text-lg leading-8 text-gray-600">Keamanan Informasi</p>
             <div class="mt-10 flex items-center justify-center gap-x-6">
               <a

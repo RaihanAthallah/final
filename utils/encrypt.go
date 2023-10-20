@@ -38,44 +38,6 @@ func EncryptAES(filePath string) string {
 	return hex.EncodeToString(gcm.Seal(nonce, nonce, []byte(filePath), nil))
 }
 
-func EncryptAES2(inputFile *os.File) ([]byte, error) {
-	key := os.Getenv("AES_KEY")
-
-	c, err := aes.NewCipher([]byte(key))
-	if err != nil {
-		return nil, fmt.Errorf("error creating cipher: %v", err)
-	}
-
-	gcm, err := cipher.NewGCM(c)
-	if err != nil {
-		return nil, fmt.Errorf("error creating GCM: %v", err)
-	}
-
-	nonce := make([]byte, gcm.NonceSize())
-
-	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-		return nil, fmt.Errorf("error creating nonce: %v", err)
-	}
-
-	// Read the contents of the input file
-	fileStat, err := inputFile.Stat()
-	if err != nil {
-		return nil, fmt.Errorf("error getting file information: %v", err)
-	}
-
-	fileSize := fileStat.Size()
-	fileData := make([]byte, fileSize)
-	_, err = inputFile.Read(fileData)
-	if err != nil {
-		return nil, fmt.Errorf("error reading file: %v", err)
-	}
-
-	// Encrypt the file contents
-	encryptedData := gcm.Seal(nonce, nonce, fileData, nil)
-
-	return encryptedData, nil
-}
-
 func DecryptAES(encryptedFilePath string) (string, error) {
 
 	key := os.Getenv("AES_KEY")

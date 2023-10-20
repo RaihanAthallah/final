@@ -3,13 +3,10 @@ package web
 import (
 	"a21hc3NpZ25tZW50/client"
 	"a21hc3NpZ25tZW50/service"
+	"a21hc3NpZ25tZW50/utils"
 	"embed"
-	"fmt"
-	"io"
 	"net/http"
-	"os"
 	"path"
-	"path/filepath"
 	"text/template"
 
 	"github.com/gin-gonic/gin"
@@ -98,8 +95,9 @@ func (a *authWeb) Register(c *gin.Context) {
 
 func (a *authWeb) RegisterProcess(c *gin.Context) {
 
-	// fmt.Printf("address: %+v\n", address)
-	if err := c.Request.ParseMultipartForm(1024); err != nil {
+	err := c.Request.ParseMultipartForm(1024)
+
+	if err != nil {
 		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
 		return
 	}
@@ -116,49 +114,14 @@ func (a *authWeb) RegisterProcess(c *gin.Context) {
 		return
 	}
 
-	allowedExtensions := []string{".jpg", ".jpeg", ".png"}
-	ext := filepath.Ext(handler.Filename)
-	validExtension := false
-	for _, allowedExt := range allowedExtensions {
-		if ext == allowedExt {
-			validExtension = true
-			break
-		}
-	}
+	defer idCard.Close()
 
-	if !validExtension {
-		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message=Invalid file extension")
-		return
-	}
-
-	uploadFolder := "uploads"
-	if err := os.MkdirAll(uploadFolder, os.ModePerm); err != nil {
-		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message=Failed to create upload folder")
-		return
-	}
-
-	imageFilename := handler.Filename
-
-	fmt.Printf("imageFilename: %+v\n", imageFilename)
-
-	// Create a new file in the specified folder
-	imagePath := filepath.Join(uploadFolder, imageFilename)
-	fmt.Printf("imagePath: %+v\n", imagePath)
-	imageFile, err := os.Create(imagePath)
-	// encrypt.
+	imageFilename, err := utils.UploadFile(idCard, handler)
 	if err != nil {
-		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
+		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message=Failed to upload file")
 		return
 	}
-	defer imageFile.Close()
-
-	// Copy the uploaded image to the new file
-	_, err = io.Copy(imageFile, idCard)
-	if err != nil {
-		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
-		return
-	}
-
+	
 	status, err := a.userClient.Register(nik, fullname, address, email, password, imageFilename)
 	if err != nil {
 		c.Redirect(http.StatusSeeOther, "/client/modal?status=error&message="+err.Error())
