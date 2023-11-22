@@ -116,14 +116,16 @@ func EncryptDES(input string) (string, error) {
 	}
 
 	// Ensure the input is a multiple of 8 bytes (the DES block size)
-	padSize := 8 - (len(input) % 8)
+	padSize := des.BlockSize - (len(input) % des.BlockSize)
 	if padSize > 0 {
 		padding := make([]byte, padSize)
 		input += string(padding)
 	}
 
+	mode := cipher.NewCBCEncrypter(block, make([]byte, des.BlockSize))
+
 	ciphertext := make([]byte, len(input))
-	block.Encrypt(ciphertext, []byte(input))
+	mode.CryptBlocks(ciphertext, []byte(input))
 
 	return string(ciphertext), nil
 }
@@ -145,8 +147,10 @@ func DecryptDES(encryptedData string) (string, error) {
 		return "", fmt.Errorf("invalid encrypted data length")
 	}
 
+	mode := cipher.NewCBCEncrypter(block, make([]byte, des.BlockSize))
+
 	plaintext := make([]byte, len(encryptedData))
-	block.Decrypt(plaintext, []byte(encryptedData))
+	mode.CryptBlocks(plaintext, []byte(encryptedData))
 
 	// Trim any trailing null bytes (padding)
 	for i := len(plaintext) - 1; i >= 0; i-- {
