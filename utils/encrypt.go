@@ -6,7 +6,11 @@ import (
 	"crypto/des"
 	"crypto/rand"
 	"crypto/rc4"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/base64"
 	"encoding/hex"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"io"
@@ -161,4 +165,65 @@ func DecryptDES(encryptedData string) (string, error) {
 	}
 
 	return string(plaintext), nil
+}
+
+func GenerateKeyPair() (string, string, error) {
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		fmt.Println(err)
+		return "", "", err
+	}
+	publicKey := privateKey.PublicKey
+
+	// Convert to easily stored format
+	privateKeyDER := x509.MarshalPKCS1PrivateKey(privateKey)
+	publicKeyDER, err := x509.MarshalPKIXPublicKey(&publicKey)
+	if err != nil {
+		fmt.Println(err)
+		return "", "", err
+	}
+
+	privateKeyPEM := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: privateKeyDER}
+	publicKeyPEM := &pem.Block{Type: "PUBLIC KEY", Bytes: publicKeyDER}
+
+	publicKeyString := base64.StdEncoding.EncodeToString(pem.EncodeToMemory(publicKeyPEM))
+	privateKeyString := base64.StdEncoding.EncodeToString(pem.EncodeToMemory(privateKeyPEM))
+
+	return privateKeyString, publicKeyString, nil
+}
+
+func EncryptRSA(data string, publicKeyString string) (string, error) {
+	block, _ := pem.Decode([]byte(publicKeyString))
+	if block == nil {
+		return "", errors.New("failed to parse PEM block containing public key")
+	}
+
+	// Parse the public key.
+	publicKey, err := x509.ParsePKCS1PublicKey(block.Bytes)
+	if err != nil {
+		fmt.Println("failed to parse public key:", err)
+		return "", err
+	}
+
+	ciphertext, err := rsa.EncryptPKCS1v15(rand.Reader, publicKey, []byte(data))
+
+	return string(ciphertext), err
+}
+
+func DecryptRSA(ciphertext string, privateKeyString string) (string, error) {
+	block, _ := pem.Decode([]byte(privateKeyString))
+	if block == nil {
+		return "", errors.New("failed to parse PEM block containing private key")
+	}
+
+	// Parse the private key.
+	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		fmt.Println("failed to parse private key:", err)
+		return "", err
+	}
+
+	plaintext, err := rsa.DecryptPKCS1v15(rand.Reader, privateKey, []byte(ciphertext))
+
+	return string(plaintext), err
 }

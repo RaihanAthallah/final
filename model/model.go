@@ -8,15 +8,17 @@ type Category struct {
 }
 
 type User struct {
-	ID        int       `gorm:"primaryKey" json:"id"`
-	NIK       string    `json:"nik" gorm:"type:varchar(255);not null;unique"`
-	Fullname  string    `json:"fullname" gorm:"type:varchar(255);"`
-	Address   string    `json:"address" gorm:"type:varchar(255);"`
-	Email     string    `json:"email" gorm:"type:varchar(255);not null"`
-	Password  string    `json:"-" gorm:"type:varchar(255);not null"`
-	IDCard    string    `json:"id_card" gorm:"type:varchar(255);"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID         int       `gorm:"primaryKey" json:"id"`
+	NIK        string    `json:"nik" gorm:"type:varchar(255);not null;unique"`
+	Fullname   string    `json:"fullname" gorm:"type:varchar(255);"`
+	Address    string    `json:"address" gorm:"type:varchar(255);"`
+	Email      string    `json:"email" gorm:"type:varchar(255);not null"`
+	Password   string    `json:"-" gorm:"type:varchar(255);not null"`
+	IDCard     string    `json:"id_card" gorm:"type:varchar(255);"`
+	PrivateKey string    `json:"privkey" gorm:"type:varchar(255);"`
+	PublicKey  string    `json:"pubkey" gorm:"type:varchar(255);"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }
 
 type UserLogin struct {

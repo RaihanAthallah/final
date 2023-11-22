@@ -52,6 +52,9 @@ func (s *userService) Register(user *model.User) (model.User, error) {
 	if dbUser.Email != "" || dbUser.ID != 0 {
 		return *user, errors.New("email already exists")
 	}
+	PrivateKey, PublicKey, err := utils.GenerateKeyPair()
+	user.PrivateKey = PrivateKey
+	user.PublicKey = PublicKey
 
 	user.CreatedAt = time.Now()
 
