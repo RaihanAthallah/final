@@ -15,8 +15,8 @@ type User struct {
 	Email      string    `json:"email" gorm:"type:varchar(255);not null"`
 	Password   string    `json:"-" gorm:"type:varchar(255);not null"`
 	IDCard     string    `json:"id_card" gorm:"type:varchar(255);"`
-	PrivateKey string    `json:"privkey" gorm:"type:varchar(255);"`
-	PublicKey  string    `json:"pubkey" gorm:"type:varchar(255);"`
+	PrivateKey string    `json:"privkey"`
+	PublicKey  string    `json:"pubkey"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 }
