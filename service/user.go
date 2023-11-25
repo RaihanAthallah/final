@@ -4,8 +4,10 @@ import (
 	"a21hc3NpZ25tZW50/model"
 	repo "a21hc3NpZ25tZW50/repository"
 	"a21hc3NpZ25tZW50/utils"
+	"bytes"
 	"errors"
 	"fmt"
+	"text/template"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -16,6 +18,7 @@ type UserService interface {
 	Login(user *model.User) (token *string, err error)
 	GetUserTaskCategory(userID int) ([]model.UserTaskCategory, error)
 	GetUserProfile(userID int) (model.UserProfile, error)
+	SendKey(srcUserID int, dstUserID int) error
 }
 
 type userService struct {
@@ -158,4 +161,74 @@ func (s *userService) GetUserProfile(userID int) (model.UserProfile, error) {
 	}
 
 	return userData, nil
+}
+
+func (s *userService) SendKey(srcUserID int, dstUserID int) error {
+	dstUserCreds, err := s.userRepo.GetUserPublicCredentials(dstUserID)
+	if err != nil {
+		return err
+	}
+
+	srcUserCreds, err := s.userRepo.GetUserPublicCredentials(srcUserID)
+	if err != nil {
+		return err
+	}
+
+	// * Access Link (?)
+	// -----
+
+	// * Symmetric Key Generation
+	key := utils.GenerateKey(32)
+
+	// Asymmetric Encryption
+	EncryptedKeyString, err := utils.EncryptRSA(key, dstUserCreds.PublicKey)
+	if err != nil {
+		return err
+	}
+
+	// Mail template
+	const tpl = `
+	<!DOCTYPE html>
+	<html>
+	<head>
+	  <title>Notification of Received Key String</title>
+	</head>
+	<body>
+	  <h1>Notification of Received Key String</h1>
+	  <p>Dear {{.Recipient}},</p>
+	  <p>We are writing to inform you that we have received a key string from {{.Sender}}.</p>
+	  <p>Here are the details of the key string:</p>
+	  <ul>
+	      <li>Ecrypted Key String: {{.KeyString}}</li>
+	  </ul>
+	  
+	  <p>Best Regards,</p>
+	  <p>{{.Sender}}<br>
+	</body>
+	</html>
+	`
+
+	data := map[string]string{
+		"Sender":    srcUserCreds.Fullname,
+		"Recipient": dstUserCreds.Fullname,
+		"KeyString": EncryptedKeyString,
+	}
+
+	t := template.Must(template.New("email").Parse(tpl))
+
+	var buf bytes.Buffer
+
+	if err := t.Execute(&buf, data); err != nil {
+		return err
+	}
+
+	subject := "Notification of Received Key String"
+	body := buf.String()
+
+	err = utils.SendEmail(dstUserCreds.Email, subject, body)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

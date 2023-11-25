@@ -15,8 +15,8 @@ type User struct {
 	Email      string    `json:"email" gorm:"type:varchar(255);not null"`
 	Password   string    `json:"-" gorm:"type:varchar(255);not null"`
 	IDCard     string    `json:"id_card" gorm:"type:varchar(255);"`
-	PrivateKey string    `json:"privkey"`
-	PublicKey  string    `json:"pubkey"`
+	PrivateKey string    `json:"private_key"`
+	PublicKey  string    `json:"public_key"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 }
@@ -94,4 +94,11 @@ type UserProfile struct {
 	Address  string `json:"address"`
 	Email    string `json:"email"`
 	IDCard   string `json:"id_card"`
+}
+
+type UserPublicCredentials struct {
+	ID        int    `json:"id"`
+	Fullname  string `json:"fullname"`
+	Email     string `json:"email"`
+	PublicKey string `json:"public_key"`
 }

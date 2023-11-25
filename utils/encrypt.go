@@ -7,8 +7,8 @@ import (
 	"crypto/rand"
 	"crypto/rc4"
 	"crypto/rsa"
+	"crypto/sha256"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/hex"
 	"encoding/pem"
 	"errors"
@@ -167,6 +167,13 @@ func DecryptDES(encryptedData string) (string, error) {
 	return string(plaintext), nil
 }
 
+func GenerateKey(len int) string {
+	key := make([]byte, len)
+	rand.Read(key)
+
+	return string(key)
+}
+
 func GenerateKeyPair() (string, string, error) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
@@ -175,21 +182,13 @@ func GenerateKeyPair() (string, string, error) {
 	}
 	publicKey := privateKey.PublicKey
 
-	// Convert to easily stored format
-	privateKeyDER := x509.MarshalPKCS1PrivateKey(privateKey)
-	publicKeyDER, err := x509.MarshalPKIXPublicKey(&publicKey)
-	if err != nil {
-		fmt.Println(err)
-		return "", "", err
-	}
+	privateKeyBytes := x509.MarshalPKCS1PrivateKey(privateKey)
+	privateKeyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: privateKeyBytes})
 
-	privateKeyPEM := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: privateKeyDER}
-	publicKeyPEM := &pem.Block{Type: "PUBLIC KEY", Bytes: publicKeyDER}
+	publicKeyBytes := x509.MarshalPKCS1PublicKey(&publicKey)
+	publicKeyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: publicKeyBytes})
 
-	publicKeyString := base64.StdEncoding.EncodeToString(pem.EncodeToMemory(publicKeyPEM))
-	privateKeyString := base64.StdEncoding.EncodeToString(pem.EncodeToMemory(privateKeyPEM))
-
-	return privateKeyString, publicKeyString, nil
+	return string(privateKeyPEM), string(publicKeyPEM), nil
 }
 
 func EncryptRSA(data string, publicKeyString string) (string, error) {
@@ -198,14 +197,12 @@ func EncryptRSA(data string, publicKeyString string) (string, error) {
 		return "", errors.New("failed to parse PEM block containing public key")
 	}
 
-	// Parse the public key.
 	publicKey, err := x509.ParsePKCS1PublicKey(block.Bytes)
 	if err != nil {
-		fmt.Println("failed to parse public key:", err)
-		return "", err
+		panic(err)
 	}
 
-	ciphertext, err := rsa.EncryptPKCS1v15(rand.Reader, publicKey, []byte(data))
+	ciphertext, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, publicKey, []byte(data), nil)
 
 	return string(ciphertext), err
 }
@@ -223,7 +220,7 @@ func DecryptRSA(ciphertext string, privateKeyString string) (string, error) {
 		return "", err
 	}
 
-	plaintext, err := rsa.DecryptPKCS1v15(rand.Reader, privateKey, []byte(ciphertext))
+	plaintext, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, privateKey, []byte(ciphertext), nil)
 
 	return string(plaintext), err
 }

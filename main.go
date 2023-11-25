@@ -124,6 +124,7 @@ func RunServer(db *gorm.DB, gin *gin.Engine) *gin.Engine {
 			user.Use(middleware.Auth())
 			user.GET("/tasks", apiHandler.UserAPIHandler.GetUserTaskCategory)
 			user.GET("/profile", apiHandler.UserAPIHandler.GetUserProfile)
+			user.GET("/send/:id", apiHandler.UserAPIHandler.SendKey)
 		}
 
 		task := version.Group("/task")
