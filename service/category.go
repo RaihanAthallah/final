@@ -56,7 +56,6 @@ func (c *categoryService) GetByID(id int) (*model.Category, error) {
 }
 
 func (c *categoryService) GetList() ([]model.Category, error) {
-	list := []model.Category{}
 	list, err := c.categoryRepository.GetList()
 	if err != nil {
 		return nil, err

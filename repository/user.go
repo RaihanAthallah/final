@@ -11,6 +11,7 @@ type UserRepository interface {
 	CreateUser(user model.User) (model.User, error)
 	GetUserTaskCategory(UserID int) ([]model.UserTaskCategory, error)
 	GetUserProfile(userID int) (model.UserProfile, error)
+	GetUserPublicCredentials(userID int) (model.UserPublicCredentials, error)
 }
 
 type userRepository struct {
@@ -55,4 +56,14 @@ func (r *userRepository) GetUserProfile(userID int) (model.UserProfile, error) {
 		return userProfile, err
 	}
 	return userProfile, nil
+}
+
+func (r *userRepository) GetUserPublicCredentials(userID int) (model.UserPublicCredentials, error) {
+	userCreds := model.UserPublicCredentials{}
+	// err := r.db.Raw("SELECT u.id AS id, u.email AS email, u.fullname AS fullname, u.public_key AS public_key FROM users u WHERE u.id = ?", userID).Scan(&userCreds).Error
+	err := r.db.Raw("SELECT u.id AS id, u.email AS email, u.fullname AS fullname, u.public_key AS public_key FROM users u WHERE u.id = ?", userID).Scan(&userCreds).Error
+	if err != nil {
+		return userCreds, err
+	}
+	return userCreds, nil
 }

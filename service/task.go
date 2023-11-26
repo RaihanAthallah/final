@@ -63,7 +63,6 @@ func (s *taskService) GetByID(id int) (*model.Task, error) {
 }
 
 func (s *taskService) GetList() ([]model.Task, error) {
-	list := []model.Task{}
 	list, err := s.taskRepository.GetList()
 	if err != nil {
 		return nil, err
@@ -72,7 +71,6 @@ func (s *taskService) GetList() ([]model.Task, error) {
 }
 
 func (s *taskService) GetTaskCategory(id int) ([]model.TaskCategory, error) {
-	list := []model.TaskCategory{}
 	list, err := s.taskRepository.GetTaskCategory(id)
 	if err != nil {
 		return nil, err

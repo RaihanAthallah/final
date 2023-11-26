@@ -6,7 +6,11 @@ import (
 	"crypto/des"
 	"crypto/rand"
 	"crypto/rc4"
+	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/x509"
 	"encoding/hex"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"io"
@@ -116,14 +120,16 @@ func EncryptDES(input string) (string, error) {
 	}
 
 	// Ensure the input is a multiple of 8 bytes (the DES block size)
-	padSize := 8 - (len(input) % 8)
+	padSize := des.BlockSize - (len(input) % des.BlockSize)
 	if padSize > 0 {
 		padding := make([]byte, padSize)
 		input += string(padding)
 	}
 
+	mode := cipher.NewCBCEncrypter(block, make([]byte, des.BlockSize))
+
 	ciphertext := make([]byte, len(input))
-	block.Encrypt(ciphertext, []byte(input))
+	mode.CryptBlocks(ciphertext, []byte(input))
 
 	return string(ciphertext), nil
 }
@@ -145,8 +151,10 @@ func DecryptDES(encryptedData string) (string, error) {
 		return "", fmt.Errorf("invalid encrypted data length")
 	}
 
+	mode := cipher.NewCBCEncrypter(block, make([]byte, des.BlockSize))
+
 	plaintext := make([]byte, len(encryptedData))
-	block.Decrypt(plaintext, []byte(encryptedData))
+	mode.CryptBlocks(plaintext, []byte(encryptedData))
 
 	// Trim any trailing null bytes (padding)
 	for i := len(plaintext) - 1; i >= 0; i-- {
@@ -157,4 +165,62 @@ func DecryptDES(encryptedData string) (string, error) {
 	}
 
 	return string(plaintext), nil
+}
+
+func GenerateKey(len int) string {
+	key := make([]byte, len)
+	rand.Read(key)
+
+	return string(key)
+}
+
+func GenerateKeyPair() (string, string, error) {
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		fmt.Println(err)
+		return "", "", err
+	}
+	publicKey := privateKey.PublicKey
+
+	privateKeyBytes := x509.MarshalPKCS1PrivateKey(privateKey)
+	privateKeyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: privateKeyBytes})
+
+	publicKeyBytes := x509.MarshalPKCS1PublicKey(&publicKey)
+	publicKeyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PUBLIC KEY", Bytes: publicKeyBytes})
+
+	return string(privateKeyPEM), string(publicKeyPEM), nil
+}
+
+func EncryptRSA(data string, publicKeyString string) (string, error) {
+	block, _ := pem.Decode([]byte(publicKeyString))
+	if block == nil {
+		return "", errors.New("failed to parse PEM block containing public key")
+	}
+
+	publicKey, err := x509.ParsePKCS1PublicKey(block.Bytes)
+	if err != nil {
+		panic(err)
+	}
+
+	ciphertext, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, publicKey, []byte(data), nil)
+
+	return string(ciphertext), err
+}
+
+func DecryptRSA(ciphertext string, privateKeyString string) (string, error) {
+	block, _ := pem.Decode([]byte(privateKeyString))
+	if block == nil {
+		return "", errors.New("failed to parse PEM block containing private key")
+	}
+
+	// Parse the private key.
+	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		fmt.Println("failed to parse private key:", err)
+		return "", err
+	}
+
+	plaintext, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, privateKey, []byte(ciphertext), nil)
+
+	return string(plaintext), err
 }

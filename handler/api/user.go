@@ -5,6 +5,7 @@ import (
 	"a21hc3NpZ25tZW50/service"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,6 +15,7 @@ type UserAPI interface {
 	Login(c *gin.Context)
 	GetUserTaskCategory(c *gin.Context)
 	GetUserProfile(c *gin.Context)
+	SendKey(c *gin.Context)
 }
 
 type userAPI struct {
@@ -109,4 +111,19 @@ func (u *userAPI) GetUserProfile(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, userProfile)
+}
+
+func (u *userAPI) SendKey(c *gin.Context) {
+	srcID := c.GetInt("user_id")
+	dstID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, model.NewErrorResponse("invalid user id"))
+		return
+	}
+	err = u.userService.SendKey(srcID, dstID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, model.NewErrorResponse(err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, nil)
 }
