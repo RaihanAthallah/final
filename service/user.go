@@ -50,12 +50,23 @@ func (s *userService) Register(user *model.User) (model.User, error) {
 	// user.NIK, err = utils.EncryptDES(user.NIK)
 	user.NIK = utils.EncryptAES(user.NIK)
 	// fmt.Printf("user nik: %+v\n", user.NIK)
-	user.Password = utils.EncryptAES(user.Password)
+	user.Password, err = utils.HashPassword(user.Password)
+	if err != nil {
+		return *user, errors.New("error hashing password")
+	}
 
 	if dbUser.Email != "" || dbUser.ID != 0 {
 		return *user, errors.New("email already exists")
 	}
+
 	PrivateKey, PublicKey, err := utils.GenerateKeyPair()
+	if err != nil {
+		return *user, errors.New("error generating key pair")
+	}
+
+	// * PKey Encrypt for safe storage
+	// PrivateKey = utils.EncryptAES(PrivateKey, hashedPassword)
+
 	user.PrivateKey = PrivateKey
 	user.PublicKey = PublicKey
 
@@ -81,13 +92,12 @@ func (s *userService) Login(user *model.User) (token *string, err error) {
 
 	fmt.Printf("dbUser password: %+v\n", dbUser.Password)
 
-	decryptedPassword, err := utils.DecryptAES(dbUser.Password)
-	// decryptedPassword, err := utils.DecryptRC4(dbUser.Password)
+	Verified := utils.VerifyPassword(dbUser.Password, user.Password)
 
-	fmt.Printf("decrypt dbUser password: %+v\n", decryptedPassword)
+	fmt.Printf("decrypt dbUser password: %+v\n", dbUser.Password)
 	fmt.Printf("user password: %+v\n", user.Password)
 
-	if user.Password != decryptedPassword {
+	if Verified {
 		return nil, errors.New("wrong email or password")
 	}
 
@@ -198,9 +208,8 @@ func (s *userService) SendKey(srcUserID int, dstUserID int) error {
 	  <p>Dear {{.Recipient}},</p>
 	  <p>We are writing to inform you that we have received a key string from {{.Sender}}.</p>
 	  <p>Here are the details of the key string:</p>
-	  <ul>
-	      <li>Ecrypted Key String: {{.KeyString}}</li>
-	  </ul>
+	  
+	  <p>Ecrypted Key String: {{.KeyString}}</li></p>
 	  
 	  <p>Best Regards,</p>
 	  <p>{{.Sender}}<br>
